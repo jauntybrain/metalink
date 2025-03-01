@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:dart_helper_utils/dart_helper_utils.dart';
 import 'package:http/http.dart' as http;
 
 /// A utility class for optimizing and following URL redirects
@@ -41,7 +42,7 @@ class UrlOptimizer {
     if (!followRedirects) {
       return UrlOptimizationResult(
         originalUrl: url,
-        finalUrl: normalizedUrl,
+        finalUrl: normalizedUrl.toUri.toString(),
         response: null,
         redirectCount: 0,
         optimizationDuration: 0,
@@ -78,7 +79,7 @@ class UrlOptimizer {
         finalResponse = response;
         return UrlOptimizationResult(
           originalUrl: url,
-          finalUrl: finalUrl,
+          finalUrl: finalUrl.toUri.toString(),
           response: finalResponse,
           redirectCount: redirectCount,
           optimizationDuration: stopwatch.elapsedMilliseconds,
@@ -114,7 +115,7 @@ class UrlOptimizer {
           final redirectResult = await optimize(nextUrl);
           return UrlOptimizationResult(
             originalUrl: url,
-            finalUrl: redirectResult.finalUrl,
+            finalUrl: redirectResult.finalUrl.toUri.toString(),
             response: redirectResult.response,
             redirectCount: redirectCount + redirectResult.redirectCount,
             optimizationDuration: stopwatch.elapsedMilliseconds,
@@ -144,7 +145,7 @@ class UrlOptimizer {
     } catch (e) {
       return UrlOptimizationResult(
         originalUrl: url,
-        finalUrl: normalizedUrl,
+        finalUrl: normalizedUrl.toUri.toString(),
         response: null,
         redirectCount: redirectCount,
         optimizationDuration: stopwatch.elapsedMilliseconds,
@@ -156,7 +157,7 @@ class UrlOptimizer {
 
     return UrlOptimizationResult(
       originalUrl: url,
-      finalUrl: finalUrl,
+      finalUrl: finalUrl.toUri.toString(),
       response: finalResponse,
       redirectCount: redirectCount,
       optimizationDuration: stopwatch.elapsedMilliseconds,

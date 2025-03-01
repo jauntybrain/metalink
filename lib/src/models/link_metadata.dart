@@ -2,15 +2,11 @@
 
 import 'dart:convert';
 
+import 'package:dart_helper_utils/dart_helper_utils.dart';
+
 import 'content_analysis.dart';
 import 'image_metadata.dart';
 import 'social_engagement.dart';
-
-/// Extension to add URI conversion to String
-extension StringUriExtension on String {
-  /// Converts this string to a [Uri]
-  Uri get toUri => Uri.parse(this);
-}
 
 /// Represents comprehensive metadata extracted from a URL
 class LinkMetadata {
@@ -187,7 +183,13 @@ class LinkMetadata {
   }
 
   /// Returns true if the metadata includes an image
-  bool get hasImage => imageMetadata?.imageUrl != null;
+  bool get hasImage => imageUrl != null;
+
+  /// returns image metadata url
+  String? get imageUrl => imageMetadata?.imageUrl;
+
+  /// Returns true if the metadata includes a favorite icon
+  bool get hasFavicon => favicon != null;
 
   /// Returns true if the metadata includes a video
   bool get hasVideo => videoUrl != null;
@@ -256,10 +258,59 @@ Site Name: $siteName
   }
 
   /// Converts this instance to a JSON string
-  String toJsonString() => jsonEncode(toJson());
+  String toJsonString() => toJson().encodedJsonString;
 
   @override
   String toString() {
     return 'LinkMetadata(title: $title, finalUrl: $finalUrl, hasImage: $hasImage)';
+  }
+
+  /// Whether this preview data contains useful information
+  ///
+  /// A preview is considered valid if it has at least one of:
+  /// title, description, image, or favicon
+  bool get isValid {
+    return title != null || description != null || hasImage || hasFavicon;
+  }
+
+  /// Gets the primary image URL from this metadata
+  String? get primaryImageUrl => imageMetadata?.imageUrl;
+
+  /// Gets the scaled image URL if available, or the original URL otherwise
+  String? getOptimizedImageUrl({int? width, int? height}) {
+    if (imageMetadata == null ||
+        !(imageMetadata!.canResizeWidth || imageMetadata!.canResizeHeight)) {
+      return primaryImageUrl;
+    }
+
+    if (width == null && height == null) {
+      return primaryImageUrl;
+    }
+
+    return imageMetadata!.generateUrl(
+      width: width,
+      height: height,
+    );
+  }
+
+  /// Returns a display-friendly version of the URL
+  String get displayUrl {
+    final uri = Uri.parse(finalUrl);
+    var display = '${uri.host}${uri.path}';
+    if (display.endsWith('/')) {
+      display = display.substring(0, display.length - 1);
+    }
+    return display;
+  }
+
+  /// Returns the estimated reading time as a human-friendly string
+  String get readingTimeString {
+    final readingTime = contentAnalysis?.readingTimeSeconds;
+    if (readingTime == null) return '';
+
+    final minutes = (readingTime / 60).round();
+    if (minutes < 1) return 'Less than 1 min read';
+    if (minutes == 1) return '1 min read';
+    return '$minutes mins read';
   }
 }

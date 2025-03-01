@@ -22,7 +22,7 @@ Add MetaLink to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  metalink: ^1.0.0
+  metalink: ^<LATEST VERSION>
 ```
 
 Then run:

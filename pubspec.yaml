@@ -1,6 +1,6 @@
 name: metalink
 description: URL metadata extraction package for Dart, providing rich link previews with image manipulation capabilities.
-version: 1.0.1
+version: 1.0.2
 repository: https://github.com/omar-hanafy/metalink
 
 topics:

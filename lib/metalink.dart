@@ -80,8 +80,11 @@ class MetaLink {
     bool extractStructuredData = true,
     bool extractSocialMetrics = false,
     bool analyzeContent = false,
+    Future<MetadataCache>? Function()? customCache,
   }) async {
-    final cache = await MetadataCacheFactory.getSharedInstance();
+    final cache = customCache != null
+        ? await customCache()
+        : await MetadataCacheFactory.getSharedInstance();
 
     final extractor = MetadataExtractor(
       client: client,

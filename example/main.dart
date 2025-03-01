@@ -1,7 +1,10 @@
 // ignore_for_file: avoid_print
+import 'package:dart_helper_utils/dart_helper_utils.dart';
 import 'package:metalink/metalink.dart';
 
 void main() async {
+  print('flutter.dev?'.toUri);
+  print('flutter.dev?'.toUri.replace(queryParameters: {'a': 'v'}));
   // Simple, one-time extraction
   print('===== Simple Extraction =====');
   final metadata = await SimpleMetaLink.extract('https://flutter.dev');

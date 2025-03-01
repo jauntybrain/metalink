@@ -46,7 +46,7 @@ class MetadataCache {
     // Check memory cache first
     if (_memoryCache.containsKey(normalizedUrl)) {
       final metadata = _memoryCache[normalizedUrl];
-      if (metadata != null && !_isExpired(metadata)) {
+      if (metadata != null && metadata.isValid && !_isExpired(metadata)) {
         return metadata;
       } else {
         // Remove expired item from memory cache
@@ -70,10 +70,12 @@ class MetadataCache {
               final metadata = LinkMetadata.fromJson(
                   json['metadata'] as Map<String, dynamic>);
 
-              // Add to memory cache for faster access next time
-              _memoryCache[normalizedUrl] = metadata;
+              if (metadata.isValid) {
+                // Add to memory cache for faster access next time
+                _memoryCache[normalizedUrl] = metadata;
 
-              return metadata;
+                return metadata;
+              }
             }
           }
 

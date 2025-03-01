@@ -1,6 +1,7 @@
 // lib/src/core/metadata_extractor.dart
 
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:html/dom.dart';
 import 'package:http/http.dart' as http;
@@ -104,7 +105,7 @@ class MetadataExtractor {
     // Check cache first if enabled
     if (cacheEnabled && !skipCache && _cache != null) {
       final cachedMetadata = await _cache?.get(url);
-      if (cachedMetadata != null) {
+      if (cachedMetadata != null && cachedMetadata.isValid) {
         return cachedMetadata;
       }
     }
@@ -202,7 +203,8 @@ class MetadataExtractor {
       }
 
       return metadata;
-    } catch (e) {
+    } catch (e, s) {
+      log('error extracting metadata for $url', error: e, stackTrace: s);
       // If an error occurs, return a basic metadata object with the error
       return LinkMetadata(
         originalUrl: originalUrl,
@@ -580,8 +582,11 @@ class MetadataExtractor {
     bool extractStructuredData = true,
     bool extractSocialMetrics = false,
     bool analyzeContent = false,
+    Future<MetadataCache>? Function()? customCache,
   }) async {
-    final cache = await MetadataCacheFactory.getSharedInstance();
+    final cache = customCache != null
+        ? await customCache()
+        : await MetadataCacheFactory.getSharedInstance();
 
     return MetadataExtractor(
       client: client,
