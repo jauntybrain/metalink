@@ -44,6 +44,7 @@ class MetaLink {
     bool extractStructuredData = true,
     bool extractSocialMetrics = false,
     bool analyzeContent = false,
+    String? proxyUrl,
   }) {
     final extractor = MetadataExtractor(
       client: client,
@@ -57,6 +58,7 @@ class MetaLink {
       extractStructuredData: extractStructuredData,
       extractSocialMetrics: extractSocialMetrics,
       analyzeContent: analyzeContent,
+      proxyUrl: proxyUrl,
     );
 
     return MetaLink._(extractor: extractor);
@@ -81,6 +83,7 @@ class MetaLink {
     bool extractSocialMetrics = false,
     bool analyzeContent = false,
     Future<MetadataCache>? Function()? customCache,
+    String? proxyUrl,
   }) async {
     final cache = customCache != null
         ? await customCache()
@@ -100,6 +103,7 @@ class MetaLink {
       extractStructuredData: extractStructuredData,
       extractSocialMetrics: extractSocialMetrics,
       analyzeContent: analyzeContent,
+      proxyUrl: proxyUrl,
     );
 
     return MetaLink._(extractor: extractor);
@@ -147,6 +151,7 @@ class MetaLink {
       userAgent: _extractor.userAgent,
       followRedirects: _extractor.followRedirects,
       maxRedirects: _extractor.maxRedirects,
+      proxyUrl: _extractor.proxyUrl,
     );
 
     try {
@@ -170,6 +175,7 @@ class MetaLink {
       maxRedirects: _extractor.maxRedirects,
       timeout: _extractor.timeout,
       userAgent: _extractor.userAgent,
+      proxyUrl: _extractor.proxyUrl,
     );
 
     try {
@@ -190,8 +196,8 @@ class SimpleMetaLink {
   /// Extracts metadata from the given URL
   ///
   /// This is a convenience method for one-time extraction
-  static Future<LinkMetadata> extract(String url) async {
-    final metalink = MetaLink.create();
+  static Future<LinkMetadata> extract(String url, {String? proxyUrl}) async {
+    final metalink = MetaLink.create(proxyUrl: proxyUrl);
     try {
       return await metalink.extract(url);
     } finally {
@@ -202,8 +208,9 @@ class SimpleMetaLink {
   /// Analyzes an image URL and returns detailed metadata
   ///
   /// This is a convenience method for one-time image analysis
-  static Future<ImageMetadata> analyzeImage(String imageUrl) async {
-    final analyzer = ImageUrlAnalyzer();
+  static Future<ImageMetadata> analyzeImage(String imageUrl,
+      {String? proxyUrl}) async {
+    final analyzer = ImageUrlAnalyzer(proxyUrl: proxyUrl);
     try {
       return await analyzer.analyze(imageUrl);
     } finally {
@@ -214,8 +221,9 @@ class SimpleMetaLink {
   /// Optimizes the given URL and follows redirects
   ///
   /// This is a convenience method for one-time URL optimization
-  static Future<UrlOptimizationResult> optimizeUrl(String url) async {
-    final optimizer = UrlOptimizer();
+  static Future<UrlOptimizationResult> optimizeUrl(String url,
+      {String? proxyUrl}) async {
+    final optimizer = UrlOptimizer(proxyUrl: proxyUrl);
     try {
       return await optimizer.optimize(url);
     } finally {

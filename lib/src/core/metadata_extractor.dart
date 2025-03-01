@@ -29,6 +29,7 @@ class MetadataExtractor {
     this.extractStructuredData = true,
     this.extractSocialMetrics = false,
     this.analyzeContent = false,
+    this.proxyUrl,
   })  : _client = client ?? http.Client(),
         _urlOptimizer = urlOptimizer ??
             UrlOptimizer(
@@ -37,6 +38,7 @@ class MetadataExtractor {
               maxRedirects: maxRedirects,
               timeout: timeout,
               userAgent: userAgent,
+              proxyUrl: proxyUrl,
             ),
         _imageAnalyzer = imageAnalyzer ??
             ImageUrlAnalyzer(
@@ -45,6 +47,7 @@ class MetadataExtractor {
               userAgent: userAgent,
               followRedirects: followRedirects,
               maxRedirects: maxRedirects,
+              proxyUrl: proxyUrl,
             ),
         _cache = cache;
 
@@ -93,6 +96,32 @@ class MetadataExtractor {
   /// Whether to analyze content
   final bool analyzeContent;
 
+  /// Optional proxy URL to use for requests (helps with CORS on web)
+  final String? proxyUrl;
+
+  /// Applies the proxy URL to the target URL if a proxy is configured
+  String _applyProxyUrl(String targetUrl) {
+    if (proxyUrl == null) return targetUrl;
+
+    // Ensure the targetUrl is correctly encoded if it contains special characters
+    final encodedTargetUrl = Uri.encodeFull(targetUrl);
+
+    // Handle different proxy URL formats
+    if (proxyUrl!.endsWith('?')) {
+      // Format: https://corsproxy.io/?https://example.com
+      return '$proxyUrl$encodedTargetUrl';
+    } else if (proxyUrl!.contains('=') && proxyUrl!.contains('?')) {
+      // Format: https://some-proxy.com/fetch?url=https://example.com
+      return '$proxyUrl$encodedTargetUrl';
+    } else if (proxyUrl!.contains('{url}')) {
+      // Format with placeholder: https://proxy.com/fetch?url={url}&param=value
+      return proxyUrl!.replaceAll('{url}', Uri.encodeComponent(targetUrl));
+    } else {
+      // Default: just append the URL
+      return '$proxyUrl$encodedTargetUrl';
+    }
+  }
+
   /// Extracts metadata from the given URL
   ///
   /// Parameters:
@@ -120,8 +149,11 @@ class MetadataExtractor {
         finalUrl = optimizationResult.finalUrl;
       }
 
-      // Fetch content
-      final response = await _fetchContent(finalUrl);
+      // The actualFetchUrl includes the proxy if needed, but we don't expose this in metadata
+      final actualFetchUrl = _applyProxyUrl(finalUrl);
+
+      // Fetch content using the proxy URL if available
+      final response = await _fetchContent(actualFetchUrl);
 
       // Parse HTML
       final document = HtmlParser.parse(response.body);
@@ -179,7 +211,7 @@ class MetadataExtractor {
         audioUrl: audioUrl,
         siteName: siteName,
         originalUrl: originalUrl,
-        finalUrl: finalUrl,
+        finalUrl: finalUrl, // Note: using the actual URL, not the proxy URL
         favicon: favicon,
         keywords: keywords,
         author: author,
@@ -191,6 +223,7 @@ class MetadataExtractor {
         socialEngagement: socialEngagement,
         contentAnalysis: contentAnalysis,
         extractionDurationMs: stopwatch.elapsedMilliseconds,
+        proxyUrl: proxyUrl,
       );
 
       // Cache result if enabled
@@ -210,6 +243,7 @@ class MetadataExtractor {
         originalUrl: originalUrl,
         finalUrl: finalUrl,
         extractionDurationMs: stopwatch.elapsedMilliseconds,
+        proxyUrl: proxyUrl,
       );
     } finally {
       stopwatch.stop();
@@ -254,6 +288,7 @@ class MetadataExtractor {
 
   /// Fetches the content at the given URL
   Future<http.Response> _fetchContent(String url) async {
+    // The URL passed here should already have the proxy applied if needed
     final request = http.Request('GET', Uri.parse(url));
 
     // Add user agent if specified
@@ -583,6 +618,7 @@ class MetadataExtractor {
     bool extractSocialMetrics = false,
     bool analyzeContent = false,
     Future<MetadataCache>? Function()? customCache,
+    String? proxyUrl,
   }) async {
     final cache = customCache != null
         ? await customCache()
@@ -601,6 +637,7 @@ class MetadataExtractor {
       extractStructuredData: extractStructuredData,
       extractSocialMetrics: extractSocialMetrics,
       analyzeContent: analyzeContent,
+      proxyUrl: proxyUrl,
     );
   }
 

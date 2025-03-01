@@ -139,16 +139,17 @@ class MetadataCache {
 
   /// Clears all cached metadata
   Future<void> clear() async {
-    _memoryCache.clear();
-
-    if (_box != null && _box!.isOpen) {
-      final allKeys = _box!.keys.toList();
-      for (final key in allKeys) {
-        if (key is String && key.startsWith(_keyPrefix)) {
-          await _box!.delete(key);
+    try {
+      _memoryCache.clear();
+      if (_box != null && _box!.isOpen) {
+        final allKeys = _box!.keys.toList();
+        for (final key in allKeys) {
+          if (key is String && key.startsWith(_keyPrefix)) {
+            await _box!.delete(key);
+          }
         }
       }
-    }
+    } catch (_) {}
   }
 
   /// Removes all expired items from the cache

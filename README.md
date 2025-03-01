@@ -291,6 +291,15 @@ final metalink = MetadataExtractor(
 
 For Flutter applications, consider using the [metalink_flutter](https://pub.dev/packages/metalink_flutter) package, which provides ready-to-use widgets for link previews.
 
+## Web Platform Limitations
+
+When using this package in Flutter Web, browser security policies,
+specifically Cross-Origin Resource Sharing ([CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)), restrict direct HTTP requests to external domains.
+To work around this limitation, consider the following options:
+
+- **If you control the server**: Enable [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) by configuring the server to include appropriate response headers (e.g., `Access-Control-Allow-Origin: *` or your app’s domain). This allows the browser to permit requests from your Flutter Web app.
+- **Alternative**: Set up your server to act as a proxy. Make a direct request from your Flutter Web app to your server, which then fetches the metadata from the external domain and returns it to your app. This bypasses [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) restrictions entirely, as the request originates server-side.
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

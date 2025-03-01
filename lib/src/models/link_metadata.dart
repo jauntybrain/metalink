@@ -31,6 +31,7 @@ class LinkMetadata {
     this.socialEngagement,
     this.contentAnalysis,
     this.extractionDurationMs,
+    this.proxyUrl,
   });
 
   /// Creates an instance from a JSON map
@@ -71,6 +72,7 @@ class LinkMetadata {
               json['contentAnalysis'] as Map<String, dynamic>)
           : null,
       extractionDurationMs: json['extractionDurationMs'] as int?,
+      proxyUrl: json['proxyUrl'] as String?,
     );
   }
 
@@ -137,6 +139,9 @@ class LinkMetadata {
   /// Duration of the extraction process in milliseconds
   final int? extractionDurationMs;
 
+  /// Optional proxy URL to use for requests (helps with CORS on web)
+  final String? proxyUrl;
+
   /// Creates a copy of this instance with the specified attributes
   LinkMetadata copyWith({
     String? title,
@@ -158,6 +163,7 @@ class LinkMetadata {
     SocialEngagement? socialEngagement,
     ContentAnalysis? contentAnalysis,
     int? extractionDurationMs,
+    String? proxyUrl,
   }) {
     return LinkMetadata(
       title: title ?? this.title,
@@ -179,6 +185,7 @@ class LinkMetadata {
       socialEngagement: socialEngagement ?? this.socialEngagement,
       contentAnalysis: contentAnalysis ?? this.contentAnalysis,
       extractionDurationMs: extractionDurationMs ?? this.extractionDurationMs,
+      proxyUrl: proxyUrl ?? this.proxyUrl,
     );
   }
 
@@ -254,6 +261,7 @@ Site Name: $siteName
       'socialEngagement': socialEngagement?.toJson(),
       'contentAnalysis': contentAnalysis?.toJson(),
       'extractionDurationMs': extractionDurationMs,
+      'proxyUrl': proxyUrl,
     };
   }
 

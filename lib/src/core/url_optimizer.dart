@@ -14,6 +14,7 @@ class UrlOptimizer {
     this.maxRedirects = 5,
     this.timeout = const Duration(seconds: 10),
     this.userAgent,
+    this.proxyUrl,
   }) : _client = client ?? http.Client();
 
   /// HTTP client for making network requests
@@ -30,6 +31,32 @@ class UrlOptimizer {
 
   /// Custom user agent to use for HTTP requests
   final String? userAgent;
+
+  /// Optional proxy URL to use for requests (helps with CORS on web)
+  final String? proxyUrl;
+
+  /// Applies the proxy URL to the target URL if a proxy is configured
+  String _applyProxyUrl(String targetUrl) {
+    if (proxyUrl == null) return targetUrl;
+
+    // Ensure the targetUrl is correctly encoded if it contains special characters
+    final encodedTargetUrl = Uri.encodeFull(targetUrl);
+
+    // Handle different proxy URL formats
+    if (proxyUrl!.endsWith('?')) {
+      // Format: https://corsproxy.io/?https://example.com
+      return '$proxyUrl$encodedTargetUrl';
+    } else if (proxyUrl!.contains('=') && proxyUrl!.contains('?')) {
+      // Format: https://some-proxy.com/fetch?url=https://example.com
+      return '$proxyUrl$encodedTargetUrl';
+    } else if (proxyUrl!.contains('{url}')) {
+      // Format with placeholder: https://proxy.com/fetch?url={url}&param=value
+      return proxyUrl!.replaceAll('{url}', Uri.encodeComponent(targetUrl));
+    } else {
+      // Default: just append the URL
+      return '$proxyUrl$encodedTargetUrl';
+    }
+  }
 
   /// Optimizes the given URL and follows redirects if enabled
   ///
@@ -57,8 +84,11 @@ class UrlOptimizer {
     var hasCookieWall = false;
 
     try {
+      // If a proxy URL is provided, use it
+      final fetchUrl = _applyProxyUrl(normalizedUrl);
+
       // Create a custom request with specified headers
-      final request = http.Request('HEAD', Uri.parse(normalizedUrl));
+      final request = http.Request('HEAD', Uri.parse(fetchUrl));
 
       // Add user agent if specified
       if (userAgent != null) {
